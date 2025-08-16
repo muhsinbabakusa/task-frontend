@@ -14,7 +14,7 @@
 
     /* Reset & base */
     *, *::before, *::after { box-sizing: border-box; }
-    html, body { height: 100%; }
+
     body{
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
@@ -87,6 +87,20 @@
       form{ max-width: 520px; }
       button{ width: 60%; }
     }
+    .sign{
+      width: 500px;
+      height: var(--btn-h);
+      margin-top: calc(var(--gap) + 4px);
+      font-size: 16px;
+      font-weight: 600;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: transform .08s ease, opacity .2s ease;
+      margin-bottom: 100px;
+    }
   </style>
 </head>
 <body>
@@ -95,6 +109,7 @@
     <input type="password" name="password" placeholder="Password" required>
     <button type="submit">Login</button>
   </form>
+  <button class="sign" id="signup" type="button">Sign-UP</button>
 
   <script>
     // 🔁 Point this to your live API base:
@@ -127,6 +142,9 @@
         alert("Unable to login right now.");
       });
     });
+    document.getElementById("signup").addEventListener("click", function(e){
+      window.location.href = "signup.html";
+    })
   </script>
 </body>
 </html>

@@ -5,40 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        *{
-            padding: 0;
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        body{
-            text-align: center;
-        }
-        form{
-            
-            height: 500px;
-            margin:200px ;
-        }
-        input{
-                 width: 500px;
-            height: 30px;
-            margin: 20px;
-            font-size: large;
-            border-radius: 20px;
-            border: solid 1px black;
-            color: black;
-            padding: 10px;
-        }
-             input::placeholder{
-            padding: 5px;
-        }
-        button{
-            width: 300px;
-            height: 50px;
-             font-size: large;
-             background-color: black;
-             color: white;
-             border-radius: 20px;
-        }
+           :root{
+      --radius: 16px;
+      --gap: 16px;
+      --input-h: 48px;
+      --btn-h: 52px;
+    }
+
+    /* Reset & base */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7f7f7;
+      display: grid;
+      place-items: center; /* centers the form vertically & horizontally */
+      padding: 24px;       /* mobile-safe breathing room */
+    }
+
+    /* Form */
+    form{
+      width: 100%;
+      max-width: 480px;        /* caps width on large screens */
+      background: #fff;
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    }
+
+    /* Inputs */
+    input{
+      width: 100%;
+      height: var(--input-h);
+      margin-top: var(--gap);
+      font-size: 16px;
+      border-radius: var(--radius);
+      border: 1px solid #cfd4dc;
+      color: #111;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fff;
+    }
+    input::placeholder{ color:#9aa3ad; }
+
+    input:focus{
+      border-color: #111;
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+    }
+
+    /* Button */
+    button{
+      width: 100%;
+      height: var(--btn-h);
+      margin-top: calc(var(--gap) + 4px);
+      font-size: 16px;
+      font-weight: 600;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: transform .08s ease, opacity .2s ease;
+    }
+    button:hover{ opacity: .92; }
+    button:active{ transform: translateY(1px); }
+
+    /* Spacing between fields */
+    input + input { margin-top: 12px; }
+
+    /* Larger screens: slightly larger type & narrower button */
+    @media (min-width: 640px){
+      form{ padding: 32px; }
+      input, button{ font-size: 17px; }
+      button{ width: 70%; }         /* still responsive, but less wide on desktop */
+    }
+
+    /* Very large screens */
+    @media (min-width: 1024px){
+      form{ max-width: 520px; }
+      button{ width: 60%; }
+    }
+    .sign{
+      width: 500px;
+      height: var(--btn-h);
+      margin-top: calc(var(--gap) + 4px);
+      font-size: 16px;
+      font-weight: 600;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: transform .08s ease, opacity .2s ease;
+      margin-bottom: 100px;
+    }
     </style>
 </head>
 <body>
