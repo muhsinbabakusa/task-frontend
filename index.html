@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        body{
+            text-align: center;
+        }
+        form{
+            height: 500px;
+            margin:200px;
+        }
+        input{
+            width: 500px;
+            height: 30px;
+            margin: 20px;
+            font-size: large;
+            border-radius: 20px;
+            border: solid 1px black;
+            color: black;
+            padding: 10px;
+        }
+        input::placeholder{
+            padding: 5px;
+        }
+        button{
+            width: 300px;
+            height: 50px;
+             font-size: large;
+             background-color: black;
+             color: white;
+             border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+ <form id="loginForm">
+  <input type="email" name="email" placeholder="Email" required><br>
+  <input type="password" name="password" placeholder="Password" required><br>
+  <button type="submit">Login</button>
+</form>
+
+    <script>
+        // 🔁 Point this to your live API base:
+    const API_BASE = "https://task-manager-8d1z.onrender.com";
+
+    document.getElementById("loginForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const form = e.target;
+
+      // OAuth2PasswordRequestForm expects fields named "username" and "password"
+      const formData = new FormData();
+      formData.append("username", form.email.value);
+      formData.append("password", form.password.value);
+
+      // ✅ Use /login (POST) — not /get_task
+      fetch(`${API_BASE}/login`, {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(result => {
+        if (result.access_token) {
+          localStorage.setItem("access_token", result.access_token);
+          // Go to your dashboard page
+          window.location.href = "dashboard.html";
+        } else {
+          alert("Login failed: " + (result.detail || "Unknown error"));
+        }
+      })
+      .catch(err => {
+        console.error("Login error:", err);
+        alert("Unable to login right now.");
+      });
+    });
+    </script>
+</body>
+</html>
