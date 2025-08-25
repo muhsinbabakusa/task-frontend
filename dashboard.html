@@ -1,279 +1,432 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard (Real API)</title>
+  <meta charset="UTF-8" />
+  <title>Task Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
+    :root{
+      --brand:#337F5E;
+      --bg:#f6f7f8;
+      --card:#ffffff;
+      --text:#222;
+      --muted:#6b7280;
+      --ring: rgba(51,127,94,.15);
+      --shadow:0 6px 20px rgba(0,0,0,.06);
+      --radius:22px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
 
-    h1 {
-      text-align: center;
-      color: #333;
+    /* Header */
+    .header{
+      position:sticky; top:0; z-index:10;
+      background: linear-gradient(0deg, #f6f7f8 0%, #ffffff 100%);
+      border-bottom: 1px solid #eee;
+    }
+    .header-inner{
+      max-width: 1100px; margin: 0 auto; padding: 14px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; margin:auto;
+    }
+    .brand img{
+      height:40px; width:auto; display:block;
+    }
+    .brand h1{
+      font-size: 18px; font-weight:700; margin:0; color: var(--brand);
+      letter-spacing:.3px;
+    }
+    .header-actions{
+      display:flex; gap:10px; align-items:center;
+      position:absolute; right:16px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      height:42px; padding:0 16px; border-radius:12px; border:2px solid var(--brand);
+      color:#fff; background:var(--brand); cursor:pointer; font-weight:600;
+      transition:.2s ease; box-shadow: var(--shadow);
+    }
+    .btn:hover{ background:#fff; color:var(--brand); }
+    .btn.secondary{
+      background:#fff; color:var(--brand);
+    }
+    .btn.secondary:hover{
+      background:#f2fbf7;
     }
 
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      font-size: 16px;
-      border-radius: 40px;
-      border: 1px;
-      
+    /* Page container */
+    .page{
+      max-width:1100px; margin:20px auto; padding: 0 16px;
+      display:grid; grid-template-columns: 360px 1fr; gap:20px;
+    }
+    @media (max-width: 900px){
+      .page{ grid-template-columns: 1fr; }
+      .brand{ margin: 0; }
     }
 
-    #userList {
-      margin-top: 20px;
-      padding: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
+    /* Card */
+    .card{
+      background:var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+      border:1px solid #eee;
     }
 
-    #userList div {
-      background: white;
-      padding: 25px;
-      border-radius: 40px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    /* Create/Edit form */
+    .form{
+      padding:16px;
+    }
+    .form h2{
+      margin:8px 0 14px; font-size:20px; color: var(--brand);
+    }
+    .row{ display:flex; gap:10px; }
+    .field{
+      display:flex; flex-direction:column; margin-bottom:12px;
+    }
+    .field label{
+      font-size: 12px; color: var(--muted); margin-bottom:6px;
+    }
+    .input, select, .date{
+      width:100%; height:44px; border-radius:12px; padding:10px 12px;
+      border:1.5px solid #e5e7eb; outline:none; background:#fff; font: inherit;
+      transition:border .15s ease, box-shadow .15s ease;
+    }
+    .input:focus, select:focus, .date:focus{
+      border-color: var(--brand); box-shadow: 0 0 0 6px var(--ring);
+    }
+    textarea.input{
+      min-height: 90px; resize: vertical; line-height:1.4;
+    }
+    .actions{
+      display:flex; gap:10px; justify-content:flex-end; margin-top:8px;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:6px; font-size:12px;
+      padding:6px 10px; border-radius:999px; background:#f0fdf4; color:var(--brand);
+      border:1px solid #c0e6d7;
     }
 
-    #userList h3 {
-      margin: 0;
-      color: black;
-      font-size: 30px;
+    /* Tasks grid */
+    .tasks{
+      padding:16px;
     }
-       #userList h4 {
-     margin: 5px 0;
-      font-weight: 100;
-      color:#404040;
+    .tasks-head{
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
+    }
+    .grid{
+      display:grid; gap:14px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .task{
+      padding:16px; border-radius: 18px; border:1px solid #eee; box-shadow: var(--shadow);
+      background:#fff; display:flex; flex-direction:column; gap:8px;
+    }
+    .task h3{ margin:0; font-size:18px; }
+    .muted{ color: var(--muted); font-size: 13px; }
+    .task .meta{ display:flex; gap:8px; flex-wrap:wrap; }
+    .task .row-actions{ display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
+    .chip{
+      display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+      background:#f8fafc; border:1px solid #eef2f7; font-size:12px; color:#374151;
+    }
+    .chip.warn{ background:#fff7ed; border-color:#fde7d6; color:#9a3412; }
+    .chip.ok{ background:#ecfdf5; border-color:#c7f0e2; color:#065f46; }
+    .empty{
+      text-align:center; padding:30px 12px; color: var(--muted);
     }
 
-    #userList p {
-      margin: 5px 0;
-      font-weight: 100;
-      color: rgb(0, 157, 255);
+    /* Toast */
+    .toast{
+      position:fixed; right:16px; bottom:16px; z-index:50;
+      padding:12px 16px; background:#111827; color:#fff; border-radius:12px;
+      box-shadow: var(--shadow); opacity:0; transform: translateY(10px);
+      transition: .2s ease;
     }
-     #userList span {
-      margin: 5px 0;
-      font-weight: 100;
-      color:rgb(56, 197, 56);
-    }
-    select{
-       padding: 10px;
-      margin: 5px;
-      font-size: 16px;
-      border-radius: 40px; 
-      width: 1 00px;
-    }
+    .toast.show{ opacity:1; transform: translateY(0); }
   </style>
 </head>
 <body>
-  <h1>📋 Your Task Dashboard</h1>
 
- <h2 id="formHeading">Create Task</h2>
-<form id="createForm"
->
-  <input id="title" placeholder="Task title *" required />
-  <input id="description" placeholder="Description (optional)" />
-  <select id="priority">
-    <option value="low">Low</option>
-    <option value="medium" selected>Medium</option>
-    <option value="high">High</option>
-  </select>
-  <input id="deadline" type="date" />
-  <input type="hidden" id="editTaskId"/>
-  <button id="submitBtn" type="submit">＋ Create Task</button>
-  <button type="button" id="cancelEdit" style="display:none;">Cancel Edit</button>
-</form>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <!-- Put your logo file in the same folder (or use an absolute URL) -->
+        <img src="Logo Design_ Bold _T_ with Checkmark.png" alt="Logo">
+        <h1>Task Manager</h1>
+      </div>
+      <div class="header-actions">
+        <button id="logoutBtn" class="btn secondary"><i class='bx bx-log-out'></i> Logout</button>
+      </div>
+    </div>
+  </header>
 
-<hr/>
+  <!-- Page -->
+  <main class="page">
+    <!-- Create / Edit -->
+    <section class="card form">
+      <h2 id="formHeading">Create Task</h2>
 
-  <div id="userList">Loading tasks...</div>
+      <div class="field">
+        <label for="title">Title *</label>
+        <input id="title" class="input" placeholder="e.g. Send invoice to client" required />
+      </div>
 
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" class="input" placeholder="Optional notes..."></textarea>
+      </div>
 
+      <div class="row">
+        <div class="field" style="flex:1">
+          <label for="priority">Priority</label>
+          <select id="priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1">
+          <label for="deadline">Deadline</label>
+          <input id="deadline" type="date" class="date" />
+        </div>
+      </div>
+
+      <input type="hidden" id="editTaskId" />
+      <div class="actions">
+        <button id="cancelEdit" class="btn secondary" style="display:none">Cancel</button>
+        <button id="submitBtn" class="btn"><i class='bx bx-plus-circle'></i><span>Save Task</span></button>
+      </div>
+      <div style="margin-top:10px">
+        <span class="badge"><i class='bx bx-info-circle'></i> Tip: click a task’s ✏️ to edit</span>
+      </div>
+    </section>
+
+    <!-- Tasks -->
+    <section class="card tasks">
+      <div class="tasks-head">
+        <h2 style="margin:0; color:var(--brand)">Your Tasks</h2>
+        <span id="counter" class="chip">0 tasks</span>
+      </div>
+      <div id="userList" class="grid">
+        <div class="empty">Loading tasks…</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Saved</div>
 
   <script>
-    const token = localStorage.getItem("access_token");
     const API_BASE = "https://task-manager-8d1z.onrender.com";
+    const token = localStorage.getItem("access_token");
 
     if (!token) {
-      alert("You are not logged in. Redirecting to login...");
-      window.location.href = "login.html"; // or your login page
+      window.location.href = "index.html";
     }
 
-    fetch(`${API_BASE}/get_task`, {
-      method: "GET",
-      headers: {
-        "Authorization": "Bearer " + token
-      }
-    })
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Failed to load tasks. Status: " + res.status);
-      }
-      return res.json();
-    })
-    .then(data => {
-      const container = document.getElementById("userList");
-      container.innerHTML = ""; // clear the 'Loading...' text
+    // Elements
+    const userList   = document.getElementById("userList");
+    const counter    = document.getElementById("counter");
+    const formHeading= document.getElementById("formHeading");
+    const titleEl    = document.getElementById("title");
+    const descEl     = document.getElementById("description");
+    const prioEl     = document.getElementById("priority");
+    const dateEl     = document.getElementById("deadline");
+    const editIdEl   = document.getElementById("editTaskId");
+    const submitBtn  = document.getElementById("submitBtn");
+    const cancelBtn  = document.getElementById("cancelEdit");
+    const toastEl    = document.getElementById("toast");
 
-      if (data.tasks.length === 0) {
-        container.innerHTML = "<p>No tasks found.</p>";
+    function toast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      setTimeout(()=>toastEl.classList.remove("show"), 1800);
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", ()=>{
+      localStorage.removeItem("access_token");
+      window.location.href = "index.html";
+    });
+
+    // Load tasks
+    async function loadTasks(){
+      userList.innerHTML = `<div class="empty">Loading tasks…</div>`;
+      try{
+        const res = await fetch(`${API_BASE}/get_task`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if(!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        renderTasks(data.tasks || []);
+      }catch(e){
+        console.error(e);
+        userList.innerHTML = `<div class="empty" style="color:#b91c1c">Failed to load tasks. Please log in again.</div>`;
+      }
+    }
+
+    function renderTasks(tasks){
+      if(!tasks.length){
+        userList.innerHTML = `<div class="empty">No tasks yet — create one on the left!</div>`;
+        counter.textContent = "0 tasks";
         return;
       }
+      counter.textContent = `${tasks.length} ${tasks.length===1?'task':'tasks'}`;
+      userList.innerHTML = "";
+      tasks.forEach(task=>{
+        const div = document.createElement("div");
+        div.className = "task";
+        const deadline = task.deadline ? String(task.deadline).split("T")[0] : "None";
+        const status = task.status || (task.completed ? "Done" : "pending");
 
-      data.tasks.forEach(task => {
-        const taskDiv = document.createElement("div");
-        taskDiv.innerHTML = `
-          <h3>${task.title}</h3>
-          <h4>${task.description}</h4>
-          <p>Status: <span>${task.status || (task.completed ? "Done" : "pending")}</span></p>
-          <p>Priority: ${task.priority}</p>
-          <p>Deadline: ${task.deadline || "None"}</p>
-          <button onclick="markDone(${task.id})">✅ Mark as Done</button>
-          <button onclick="deleteTask(${task.id})">🗑️ Delete</button>
-          <button onclick="startEdit(${task.id}, ${JSON.stringify(task).replace(/"/g, '&quot;')})">✏️ Edit</button>
+        div.innerHTML = `
+          <h3>${escapeHtml(task.title)}</h3>
+          ${task.description ? `<div class="muted">${escapeHtml(task.description)}</div>` : ""}
+          <div class="meta">
+            <span class="chip"><i class='bx bxs-flag'></i> Priority: ${escapeHtml(task.priority || "medium")}</span>
+            <span class="chip ${status.toLowerCase()==='done'?'ok':'warn'}"><i class='bx bx-check-shield'></i> ${escapeHtml(status)}</span>
+            <span class="chip"><i class='bx bx-calendar'></i> Deadline: ${escapeHtml(deadline)}</span>
+          </div>
+          <div class="row-actions">
+            <button class="btn secondary" onclick='startEdit(${task.id}, ${encodeTask(task)})'><i class="bx bx-edit-alt"></i> Edit</button>
+            <button class="btn" style="background:#0ea5e9;border-color:#0ea5e9" onclick="markDone(${task.id})"><i class='bx bx-check'></i> Done</button>
+            <button class="btn" style="background:#ef4444;border-color:#ef4444" onclick="deleteTask(${task.id})"><i class='bx bx-trash'></i> Delete</button>
+          </div>
         `;
-        container.appendChild(taskDiv);
+        userList.appendChild(div);
       });
-    })
-    .catch(error => {
-      console.error("Error loading tasks:", error);
-      document.getElementById("userList").innerHTML = "<p style='color:red;'>Failed to load tasks. Please check your login or try again later.</p>";
-    });
-
-
-
-  function markDone(taskId) {
-    const token = localStorage.getItem("access_token");
-
-    fetch(`${API_BASE}/mark_done?task_id=${taskId}`, {
-      method: "PATCH",
-      headers: {
-        "Authorization": "Bearer " + token
-      }
-    })
-    .then(res => res.json())
-    .then(result => {
-      alert(result.message);
-      location.reload(); // reloads the page to refresh the task list
-    })
-    .catch(err => {
-      console.error("Error marking task as done:", err);
-      alert("Failed to mark task as done");
-    });
-  }
-  function deleteTask(taskId){
-    const token = localStorage.getItem("access_token");
-
-    fetch(`${API_BASE}/delete_task?task_id=${taskId}`,{
-        method: "DELETE",
-          headers: {
-        "Authorization": "Bearer " + token
-      }
-    })
-    .then(res => res.json())
-    .then(result => {
-        alert(result.message);
-        location.reload();
-    })
-    .catch(err => {
-        console.error("Error removing task", err);
-        alert("Failed to remove task");
-    });
-
-  }
-
- const createForm = document.getElementById("createForm");
-if (createForm){
-  createForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const payload = {
-      title: document.getElementById("title").value.trim(),
-      description: document.getElementById("description").value.trim(),
-      priority: document.getElementById("priority").value,
-      deadline: document.getElementById("deadline").value || null
-    };
-
-    if (!payload.title){
-      alert("Title is required");
-      return;
     }
 
-    const editId = document.getElementById("editTaskId").value; // NEW
-    const isEditing = !!editId; // NEW
+    // Helpers
+    function escapeHtml(str){
+      return String(str ?? "").replace(/[&<>"']/g, s=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[s]));
+    }
+    function encodeTask(task){
+      return JSON.stringify(task).replace(/</g,"\\u003c").replace(/>/g,"\\u003e").replace(/"/g,'&quot;');
+    }
 
-    const submitBtn = createForm.querySelector("button[type='submit']");
-    const originalText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = isEditing ? "Updating..." : "Creating..."; // CHANGED
+    // Actions
+    async function markDone(id){
+      try{
+        const res = await fetch(`${API_BASE}/mark_done?task_id=${id}`, {
+          method:"PATCH",
+          headers:{ "Authorization":"Bearer " + token }
+        });
+        const data = await res.json();
+        toast(data.message || "Marked done");
+        await loadTasks();
+      }catch(e){
+        alert("Failed to mark as done.");
+      }
+    }
 
-    // CHANGED: Pick URL & method
-    const url = isEditing
-  ? `${API_BASE}/update_task/${editId}`
-  : `${API_BASE}/create_task`;
+    async function deleteTask(id){
+      if(!confirm("Delete this task?")) return;
+      try{
+        const res = await fetch(`${API_BASE}/delete_task?task_id=${id}`, {
+          method:"DELETE",
+          headers:{ "Authorization":"Bearer " + token }
+        });
+        const data = await res.json();
+        toast(data.message || "Deleted");
+        await loadTasks();
+      }catch(e){
+        alert("Failed to delete task.");
+      }
+    }
 
-    const method = isEditing ? "PUT" : "POST";
+    // Create / Update
+    submitBtn.addEventListener("click", async (e)=>{
+      e.preventDefault();
+      const title = titleEl.value.trim();
+      if(!title){ titleEl.focus(); return; }
 
-    fetch(url, {
-      method: method,
-      headers: {
-        "Authorization": "Bearer " + localStorage.getItem("access_token"),
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(result => {
-      alert(isEditing ? "Task Updated" : "Task Created"); // CHANGED
-      document.getElementById("cancelEdit").style.display = "none";
-      location.reload();
-    })
-    .catch(err => {
-      console.error("Error saving task:", err);
-      alert("Failed to save task");
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
+      const payload = {
+        title,
+        description: descEl.value.trim(),
+        priority: prioEl.value,
+        deadline: dateEl.value || null
+      };
+
+      const editId = editIdEl.value;
+      const editing = !!editId;
+
+      submitBtn.disabled = true;
+      submitBtn.querySelector("span").textContent = editing ? "Updating..." : "Creating...";
+
+      try{
+        const url = editing ? `${API_BASE}/update_task/${editId}` : `${API_BASE}/create_task`;
+        const method = editing ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+          method,
+          headers:{
+            "Authorization":"Bearer " + token,
+            "Content-Type":"application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(()=>({}));
+
+        if(!res.ok){
+          alert("Failed to save: " + (data.detail || data.message || ("HTTP "+res.status)));
+        }else{
+          toast(editing ? "Task updated" : "Task created");
+          resetForm();
+          await loadTasks();
+        }
+      }catch(err){
+        alert("Failed to save task.");
+      }finally{
+        submitBtn.disabled = false;
+        submitBtn.querySelector("span").textContent = "Save Task";
+      }
     });
-  });
-}
 
+    function resetForm(){
+      editIdEl.value = "";
+      titleEl.value = "";
+      descEl.value = "";
+      prioEl.value = "medium";
+      dateEl.value = "";
+      formHeading.textContent = "Create Task";
+      cancelBtn.style.display = "none";
+    }
 
-  function startEdit(id, task){
-     document.getElementById("title").value = task.title || "";
-  document.getElementById("description").value = task.description || "";
-  document.getElementById("priority").value = task.priority || "medium";
-  document.getElementById("deadline").value = (task.deadline && task.deadline !== "None") ? task.deadline : "";
+    cancelBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      resetForm();
+    });
 
-    document.getElementById("editTaskId").value = id;
+    // Expose for inline onclick
+    window.startEdit = function(id, task){
+      // task is passed as an object literal via encoded JSON string -> parse if necessary
+      if (typeof task === "string"){
+        try{ task = JSON.parse(task.replace(/&quot;/g,'"')); }catch{}
+      }
+      titleEl.value = task.title || "";
+      descEl.value = task.description || "";
+      prioEl.value = task.priority || "medium";
+      dateEl.value = (task.deadline && task.deadline !== "None") ? String(task.deadline).split("T")[0] : "";
+      editIdEl.value = id;
 
-      const submitBtn = document.getElementById("submitBtn");
-        if (submitBtn) submitBtn.textContent = "Update Task";
-        document.getElementById("cancelEdit").style.display = "inline-block";
-        document.getElementById("formHeading").textContent = "Edit Task";
-        document.getElementById("createForm").scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+      formHeading.textContent = "Edit Task";
+      cancelBtn.style.display = "inline-flex";
+      titleEl.scrollIntoView({behavior:"smooth", block:"center"});
+    };
 
-  window.startEdit = startEdit;
-  
-  const cancelBtn = document.getElementById("cancelEdit");
-if (cancelBtn) {
-  cancelBtn.addEventListener("click", function () {
-    document.getElementById("editTaskId").value = "";
-    document.getElementById("title").value = "";
-    document.getElementById("description").value = "";
-    document.getElementById("priority").value = "medium";
-    document.getElementById("deadline").value = "";
-
-    document.getElementById("cancelEdit").style.display = "none";
-    const submitBtn = document.getElementById("submitBtn");
-    document.getElementById("formHeading").textContent = "Create Task";
-    if (submitBtn) submitBtn.textContent = "＋ Create Task";
-  });
-}
+    // Go!
+    loadTasks();
   </script>
 </body>
 </html>
