@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -276,6 +276,33 @@
            img{
             height: 100px;
            }
+
+        /* Loader on buttons */
+.btn.loading {
+  pointer-events: none;   /* block double clicks */
+  opacity: 0.85;
+  position: relative;
+}
+
+.btn.loading::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  width: 16px; height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Optional: full-width error helper */
+.form-error {
+  margin-top: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+}   
 </style>
 </head>
 <body>
@@ -293,6 +320,10 @@
                     <input type="password" name="password" placeholder="Password" required>
                     <i class='bx bx-lock-alt'></i>
                 </div>
+
+                 <div id="signupError" class="form-error" style="display:none"></div>
+                
+
                 <button class="btn" type="submit">Login</button>
             </form>
         </div>
@@ -314,6 +345,10 @@
                     <input type="password" id="password" placeholder="Password" required>
                     <i class='bx bx-lock-alt'></i>
                 </div>
+
+                 <div id="signupError" class="form-error" style="display:none"></div>
+
+
                 <button class="btn" type="submit">Register</button>
             </form>
         </div>
@@ -335,94 +370,144 @@
     </div>
 
 
-    <script>
-    const container = document.querySelector('.container');
-    const registerBtn = document.querySelector('.register-btn');
-    const loginBtn = document.querySelector('.login-btn');
+  <script>
+  const container = document.querySelector('.container');
+  const registerBtn = document.querySelector('.register-btn');
+  const loginBtn = document.querySelector('.login-btn');
 
-    registerBtn.addEventListener('click', () => {
-        container.classList.add('active');
-    });
+  const API_BASE = "https://task-manager-8d1z.onrender.com";
 
-    loginBtn.addEventListener('click', () => {
-        container.classList.remove('active');
-    });
-
-     const API_BASE = "https://task-manager-8d1z.onrender.com";
- 
-
-document.getElementById("signupForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  const form = e.target;
-
-  const full_name = form.querySelector('input[id="full_name"]').value;
-  const email = form.querySelector('input[id="email"]').value;
-  const password = form.querySelector('input[id="password"]').value;
-
-  // 1) Create the user
-  const regRes = await fetch(`${API_BASE}/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ full_name, email, password })
-  });
-
-  const regData = await regRes.json().catch(() => ({}));
-  if (!regRes.ok) {
-    alert("Signup failed: " + (regData.detail || regData.message || `HTTP ${regRes.status}`));
-    return;
+  // --- ADD: loader + timeout helpers ---
+  function setLoading(btn, on, textWhileLoading, textIdle){
+    if (!btn) return;
+    const labelSpan = btn.querySelector('span') || btn; // works even if no <span>
+    if (on){
+      btn.classList.add('loading');
+      btn.disabled = true;
+      if (labelSpan) labelSpan.textContent = textWhileLoading;
+    }else{
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      if (labelSpan) labelSpan.textContent = textIdle;
+    }
   }
 
-  // 2) Auto-login to get token
-  const loginFormData = new FormData();
-  loginFormData.append("username", email);
-  loginFormData.append("password", password);
-
-  const loginRes = await fetch(`${API_BASE}/login`, {
-    method: "POST",
-    body: loginFormData
-  });
-
-  const loginData = await loginRes.json().catch(() => ({}));
-  if (!loginRes.ok || !loginData.access_token) {
-    alert("Signed up, but login failed: " + (loginData.detail || loginData.message || `HTTP ${loginRes.status}`));
-    return;
+  async function fetchWithTimeout(resource, options = {}, timeoutMs = 25000){
+    const controller = new AbortController();
+    const id = setTimeout(()=>controller.abort(), timeoutMs);
+    try{
+      return await fetch(resource, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(id);
+    }
   }
 
-  // 3) Save token & go to dashboard
-  localStorage.setItem("access_token", loginData.access_token);
-  window.location.href = "dashboard.html";
-});
+  // Warm-up ping (keeps Render from cold-starting)
+  (async function warmUp(){
+    try { await fetchWithTimeout(`${API_BASE}/health`, {}, 8000); } catch {}
+  })();
 
-      document.getElementById("loginForm").addEventListener("submit", function(e){
-      e.preventDefault();
-      const form = e.target;
+  registerBtn.addEventListener('click', () => {
+    container.classList.add('active');
+  });
 
-      // OAuth2PasswordRequestForm expects "username" and "password"
-      const formData = new FormData();
-      formData.append("username", form.email.value);
-      formData.append("password", form.password.value);
+  loginBtn.addEventListener('click', () => {
+    container.classList.remove('active');
+  });
 
-      fetch(`${API_BASE}/login`, {
+  document.getElementById("signupForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const form = e.target;
+
+    const full_name = form.querySelector('input[id="full_name"]').value;
+    const email = form.querySelector('input[id="email"]').value;
+    const password = form.querySelector('input[id="password"]').value;
+
+    // find submit button + set loading ON
+    const signupBtn = form.querySelector('button[type="submit"]') || form.querySelector('button');
+    setLoading(signupBtn, true, "Creating account...", "Sign up");
+
+    try{
+      // 1) Create the user (use timeout)
+      const regRes = await fetchWithTimeout(`${API_BASE}/register`, {
         method: "POST",
-        body: formData
-      })
-      .then(res => res.json())
-      .then(result => {
-        if (result.access_token) {
-          localStorage.setItem("access_token", result.access_token);
-          window.location.href = "dashboard.html";
-        } else {
-          alert("Login failed: " + (result.detail || "Unknown error"));
-        }
-      })
-      .catch(err => {
-        console.error("Login error:", err);
-        alert("Unable to login right now.");
-      });
-    });
-    document.getElementById("signup").addEventListener("click", function(e){
-      window.location.href = "signup.html";
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name, email, password })
+      }, 25000);
+
+      const regData = await regRes.json().catch(() => ({}));
+      if (!regRes.ok) {
+        throw new Error(regData.detail || regData.message || `HTTP ${regRes.status}`);
+      }
+
+      // 2) Auto-login to get token (use timeout)
+      const loginFormData = new FormData();
+      loginFormData.append("username", email);
+      loginFormData.append("password", password);
+
+      const loginRes = await fetchWithTimeout(`${API_BASE}/login`, {
+        method: "POST",
+        body: loginFormData
+      }, 25000);
+
+      const loginData = await loginRes.json().catch(() => ({}));
+      if (!loginRes.ok || !loginData.access_token) {
+        throw new Error(loginData.detail || loginData.message || `HTTP ${loginRes.status}`);
+      }
+
+      // 3) Save token & go to dashboard
+      localStorage.setItem("access_token", loginData.access_token);
+      window.location.href = "dashboard.html";
+    }catch(err){
+      const msg = err.name === "AbortError"
+        ? "Server might be waking up. Please try again."
+        : (err.message || "Signup failed.");
+      alert("Signup failed: " + msg);
+    }finally{
+      setLoading(signupBtn, false, "", "Sign up");
+    }
+  });
+
+  document.getElementById("loginForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    const form = e.target;
+
+    // OAuth2PasswordRequestForm expects "username" and "password"
+    const formData = new FormData();
+    formData.append("username", form.email.value);
+    formData.append("password", form.password.value);
+
+    // find submit button + set loading ON
+    const loginSubmitBtn = form.querySelector('button[type="submit"]') || form.querySelector('button');
+    setLoading(loginSubmitBtn, true, "Signing in...", "Login");
+
+    fetchWithTimeout(`${API_BASE}/login`, {
+      method: "POST",
+      body: formData
+    }, 25000)
+    .then(res => res.json().then(data => ({ ok: res.ok, status: res.status, data })))
+    .then(({ ok, status, data }) => {
+      if (ok && data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+        window.location.href = "dashboard.html";
+      } else {
+        const msg = data.detail || data.message || `HTTP ${status}`;
+        alert("Login failed: " + msg);
+      }
     })
+    .catch(err => {
+      const msg = err.name === "AbortError"
+        ? "Server might be waking up. Please try again."
+        : "Unable to login right now.";
+      console.error("Login error:", err);
+      alert(msg);
+    })
+    .finally(() => {
+      setLoading(loginSubmitBtn, false, "", "Login");
+    });
+  });
+
+  document.getElementById("signup").addEventListener("click", function(e){
+    window.location.href = "signup.html";
+  });
 </script>
-</body>
-</html>
