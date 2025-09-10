@@ -227,7 +227,7 @@
   box-shadow:0 6px 20px rgba(239,68,68,.10);
 }
 .task.done .chip:last-child{ /* done chip */
-  background:#73fe6c; border-color:#73fe6c; color:#b91c1c;
+  background:#73fe6c; border-color:#73fe6c; color:#73fe6c;
 }
 .task.overdue .chip:last-child{ /* deadline chip */
   background:#fef2f2; border-color:#fee2e2; color:#b91c1c;
@@ -404,32 +404,7 @@
       window.location.href = "index.html";
     });
 
-    // Load tasks
- async function loadTasks(){
-  // show skeletons first
-  userList.innerHTML = "";
-  for (let i = 0; i < 6; i++){
-    const s = document.createElement("div");
-    s.className = "skeleton";
-    userList.appendChild(s);
-  }
-
-  try{
-    const res = await fetch(`${API_BASE}/get_task`, {
-      headers: { "Authorization": "Bearer " + token }
-    });
-    if(!res.ok) throw new Error("HTTP " + res.status);
-
-    const data = await res.json();
-    allTasks = data.tasks || [];
-    applyAndRender();   // use filtering + search before rendering
-  }catch(e){
-    console.error(e);
-    userList.innerHTML = `<div class="empty" style="color:#b91c1c">
-      Failed to load tasks. Please log in again.
-    </div>`;
-  }
-}
+    
 
     // helpers used by rendering & filtering
     function escapeHtml(str){
@@ -686,6 +661,39 @@
         createBtn.classList.remove("hidden");
       }
     });
+
+    // Load tasks
+// Load tasks (skeleton + fetch + render)
+async function loadTasks(){
+  try {
+    // show skeleton placeholders first
+    userList.innerHTML = "";
+    for (let i = 0; i < 6; i++) {
+      const s = document.createElement("div");
+      s.className = "skeleton";
+      userList.appendChild(s);
+    }
+
+    // fetch tasks
+    const res = await fetch(`${API_BASE}/get_task`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const data = await res.json();
+    allTasks = data.tasks || [];
+
+    // apply filters + render
+    applyAndRender();
+
+  } catch (e) {
+    console.error(e);
+    userList.innerHTML = `<div class="empty" style="color:#b91c1c">
+      Failed to load tasks. Please log in again.
+    </div>`;
+  }
+}
 
     // Go!
     loadTasks();
