@@ -405,20 +405,31 @@
     });
 
     // Load tasks
-    async function loadTasks(){
-      userList.innerHTML = `<div class="empty">Loading tasks…</div>`;
-      try{
-        const res = await fetch(`${API_BASE}/get_task`, {
-          headers: { "Authorization": "Bearer " + token }
-        });
-        if(!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        renderTasks(data.tasks || []);
-      }catch(e){
-        console.error(e);
-        userList.innerHTML = `<div class="empty" style="color:#b91c1c">Failed to load tasks. Please log in again.</div>`;
-      }
-    }
+ async function loadTasks(){
+  // show skeletons first
+  userList.innerHTML = "";
+  for (let i = 0; i < 6; i++){
+    const s = document.createElement("div");
+    s.className = "skeleton";
+    userList.appendChild(s);
+  }
+
+  try{
+    const res = await fetch(`${API_BASE}/get_task`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+
+    const data = await res.json();
+    allTasks = data.tasks || [];
+    applyAndRender();   // use filtering + search before rendering
+  }catch(e){
+    console.error(e);
+    userList.innerHTML = `<div class="empty" style="color:#b91c1c">
+      Failed to load tasks. Please log in again.
+    </div>`;
+  }
+}
 
     // helpers used by rendering & filtering
     function escapeHtml(str){
