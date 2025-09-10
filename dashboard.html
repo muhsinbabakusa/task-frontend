@@ -227,7 +227,7 @@
   box-shadow:0 6px 20px rgba(239,68,68,.10);
 }
 .task.done .chip:last-child{ /* done chip */
-  background:#73fe6c; border-color:#73fe6c; color:#73fe6c;
+  background:#73fe6c; border-color:#73fe6c; color:#b91c1c;
 }
 .task.overdue .chip:last-child{ /* deadline chip */
   background:#fef2f2; border-color:#fee2e2; color:#b91c1c;
@@ -404,7 +404,21 @@
       window.location.href = "index.html";
     });
 
-    
+    // Load tasks
+    async function loadTasks(){
+      userList.innerHTML = `<div class="empty">Loading tasks…</div>`;
+      try{
+        const res = await fetch(`${API_BASE}/get_task`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if(!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        renderTasks(data.tasks || []);
+      }catch(e){
+        console.error(e);
+        userList.innerHTML = `<div class="empty" style="color:#b91c1c">Failed to load tasks. Please log in again.</div>`;
+      }
+    }
 
     // helpers used by rendering & filtering
     function escapeHtml(str){
@@ -455,7 +469,7 @@
         const div = document.createElement("div");
         div.className = "task";
         if (isOverdue(task)) div.classList.add('overdue');
-        if (isDone(task)) div.classList.add('done');
+        if (iDone(task)) div.classList.add('done');
 
         const deadline = task.deadline ? String(task.deadline).split("T")[0] : "None";
         const status = task.status || (task.completed ? "Done" : "pending");
@@ -597,48 +611,51 @@
     };
 
 
-let allTasks = [];             // cache full list from server
-let currentFilter = 'all';     // 'all' | 'pending' | 'done' | 'overdue'
-let currentQuery  = ''; 
+    let allTasks = [];             // cache full list from server
+    let currentFilter = 'all';     // 'all' | 'pending' | 'done' | 'overdue'
+    let currentQuery  = ''; 
 
-// apply & render pipeline
-function applyAndRender(){
-  let list = allTasks.slice();
+    // apply & render pipeline
+    function applyAndRender(){
+      let list = allTasks.slice();
+      overdue
 
-  // filter
-  if (currentFilter === 'pending') list = list.filter(t => !isDone(t));
-  if (currentFilter === 'done')    list = list.filter(t => isDone(t));
-  if (currentFilter === 'overdue') list = list.filter(t => isOverdue(t));
+      // filter
+      if (currentFilter === 'pending') list = list.filter(t => !isDone(t));
+      if (currentFilter === 'done')    list = list.filter(t => isDone(t));
+      if (currentFilter === 'overdue') list = list.filter(t => isOverdue(t));
 
-  // search
-  const q = normalize(currentQuery.trim());
-  if (q) list = list.filter(t => matchesQuery(t, q));
+      // search
+      const q = normalize(currentQuery.trim());
+      if (q) list = list.filter(t => matchesQuery(t, q));
 
-  renderTasks(list, { total: allTasks.length });
-}
+      renderTasks(list, { total: allTasks.length });
+    }
 
-function setFilter(name){
-  currentFilter = name;
-  document.querySelectorAll('.pill').forEach(p=>{
-    const active = p.getAttribute('data-filter') === name;
-    p.classList.toggle('active', active);
-    p.setAttribute('aria-selected', String(active));
-  });
-  applyAndRender();
-}
+    function setFilter(name){
+      currentFilter = name;
+      document.querySelectorAll('.pill').forEach(p=>{
+        const active = p.getAttribute('data-filter') === name;
+        p.classList.toggle('active', active);
+        p.setAttribute('aria-selected', String(active));
+      });
+      applyAndRender();
+    }
 
-function setQuery(val){
-  currentQuery = val;
-  applyAndRender();
-}
+    function setQuery(val){
+      currentQuery = val;
+      applyAndRender();
+    }
 
-function clearQuery(){
-  currentQuery = '';
-  const box = document.getElementById("searchBox");
-  if (box) box.value = '';
-  applyAndRender();
-}
-      
+    function clearQuery(){
+      currentQuery = '';
+      const box = document.getElementById('searchBox');
+      if (box){ box.value = ''; box.focus(); }
+      applyAndRender();
+    }
+
+    
+  
 
     // show modal when create button clicked
     createBtn?.addEventListener("click", (e) => {
@@ -658,41 +675,6 @@ function clearQuery(){
         createBtn.classList.remove("hidden");
       }
     });
-
-// Load tasks (skeleton + fetch + render)
-async function loadTasks(){
-  try {
-    // show skeleton placeholders first
-    userList.innerHTML = "";
-    for (let i = 0; i < 6; i++) {
-      const div = document.createElement("div");
-      div.className = "task skeleton";
-      div.innerHTML = `
-        <div class="skeleton-title"></div>
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line short"></div>
-      `;
-      userList.appendChild(div);
-    }
-
-    // fetch tasks from backend
-    const res = await fetch(`${API_BASE}/get_task`, {
-      headers: { "Authorization": "Bearer " + token }
-    });
-
-    if (!res.ok) {
-      userList.innerHTML = `<div class="empty">Failed to load tasks (HTTP ${res.status}).</div>`;
-      return;
-    }
-
-    const tasks = await res.json();
-    allTasks = Array.isArray(tasks) ? tasks : [];
-    applyAndRender();
-  } catch (err) {
-    console.error("Failed to load tasks:", err);
-    userList.innerHTML = `<div class="empty">Error loading tasks.</div>`;
-  }
-}
 
     // Go!
     loadTasks();
