@@ -597,51 +597,48 @@
     };
 
 
-    let allTasks = [];             // cache full list from server
-    let currentFilter = 'all';     // 'all' | 'pending' | 'done' | 'overdue'
-    let currentQuery  = ''; 
+let allTasks = [];             // cache full list from server
+let currentFilter = 'all';     // 'all' | 'pending' | 'done' | 'overdue'
+let currentQuery  = ''; 
 
-    // apply & render pipeline
-    function applyAndRender(){
-      let list = allTasks.slice();
-      overdue
+// apply & render pipeline
+function applyAndRender(){
+  let list = allTasks.slice();
 
-      // filter
-      if (currentFilter === 'pending') list = list.filter(t => !isDone(t));
-      if (currentFilter === 'done')    list = list.filter(t => isDone(t));
-      if (currentFilter === 'overdue') list = list.filter(t => isOverdue(t));
+  // filter
+  if (currentFilter === 'pending') list = list.filter(t => !isDone(t));
+  if (currentFilter === 'done')    list = list.filter(t => isDone(t));
+  if (currentFilter === 'overdue') list = list.filter(t => isOverdue(t));
 
-      // search
-      const q = normalize(currentQuery.trim());
-      if (q) list = list.filter(t => matchesQuery(t, q));
+  // search
+  const q = normalize(currentQuery.trim());
+  if (q) list = list.filter(t => matchesQuery(t, q));
 
-      renderTasks(list, { total: allTasks.length });
-    }
+  renderTasks(list, { total: allTasks.length });
+}
 
-    function setFilter(name){
-      currentFilter = name;
-      document.querySelectorAll('.pill').forEach(p=>{
-        const active = p.getAttribute('data-filter') === name;
-        p.classList.toggle('active', active);
-        p.setAttribute('aria-selected', String(active));
-      });
-      applyAndRender();
-    }
+function setFilter(name){
+  currentFilter = name;
+  document.querySelectorAll('.pill').forEach(p=>{
+    const active = p.getAttribute('data-filter') === name;
+    p.classList.toggle('active', active);
+    p.setAttribute('aria-selected', String(active));
+  });
+  applyAndRender();
+}
 
-    function setQuery(val){
-      currentQuery = val;
-      applyAndRender();
-    }
+function setQuery(val){
+  currentQuery = val;
+  applyAndRender();
+}
 
-    function clearQuery(){
-      currentQuery = '';
-      const box = document.getElementById('searchBox');
-      if (box){ box.value = ''; box.focus(); }
-      applyAndRender();
-    }
-
-    
-  
+function clearQuery(){
+  currentQuery = '';
+  const box = document.getElementById("searchBox");
+  if (box) box.value = '';
+  applyAndRender();
+}
+      
 
     // show modal when create button clicked
     createBtn?.addEventListener("click", (e) => {
@@ -662,36 +659,38 @@
       }
     });
 
-    // Load tasks
 // Load tasks (skeleton + fetch + render)
 async function loadTasks(){
   try {
     // show skeleton placeholders first
     userList.innerHTML = "";
     for (let i = 0; i < 6; i++) {
-      const s = document.createElement("div");
-      s.className = "skeleton";
-      userList.appendChild(s);
+      const div = document.createElement("div");
+      div.className = "task skeleton";
+      div.innerHTML = `
+        <div class="skeleton-title"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
+      `;
+      userList.appendChild(div);
     }
 
-    // fetch tasks
-    const res = await fetch(`${API_BASE}/get_task`, {
+    // fetch tasks from backend
+    const res = await fetch(`${API_BASE}/all_tasks`, {
       headers: { "Authorization": "Bearer " + token }
     });
 
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) {
+      userList.innerHTML = `<div class="empty">Failed to load tasks (HTTP ${res.status}).</div>`;
+      return;
+    }
 
-    const data = await res.json();
-    allTasks = data.tasks || [];
-
-    // apply filters + render
+    const tasks = await res.json();
+    allTasks = Array.isArray(tasks) ? tasks : [];
     applyAndRender();
-
-  } catch (e) {
-    console.error(e);
-    userList.innerHTML = `<div class="empty" style="color:#b91c1c">
-      Failed to load tasks. Please log in again.
-    </div>`;
+  } catch (err) {
+    console.error("Failed to load tasks:", err);
+    userList.innerHTML = `<div class="empty">Error loading tasks.</div>`;
   }
 }
 
