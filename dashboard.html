@@ -33,17 +33,17 @@
       border-bottom: 1px solid #eee;
     }
     .header-inner{
-      max-width: 1100px; margin: 0 auto; padding: 14px 16px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      max-width: 1100px; margin: 0 auto; padding: 10px 14px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
     }
     .brand{
-      display:flex; align-items:center; gap:12px; margin:auto;
+      display:flex; align-items:center; gap:2px; margin:auto;
     }
     .brand img{
-      height:40px; width:auto; display:block;
+      height:55px; width:auto; display:block;
     }
     .brand h1{
-      font-size: 18px; font-weight:700; margin:0; color: var(--brand);
+      font-size: 30px; font-weight:700; margin:0; color: var(--brand);
       letter-spacing:.3px;
     }
     .header-actions{
@@ -56,31 +56,48 @@
       color:#fff; background:var(--brand); cursor:pointer; font-weight:600;
       transition:.2s ease; box-shadow: var(--shadow);
     }
-    .btn:hover{ background:#fff; color:var(--brand); }
+    .btn:hover{ 
+      background:#fff;
+      color:var(--brand); 
+      transition: 1s;
+      
+      }
     .btn.secondary{
       background:#fff; color:var(--brand);
+      transition: 1s;
     }
     .btn.secondary:hover{
       background:#f2fbf7;
+      transition: 1s;
     }
 
     /* Page container */
     .page{
-      max-width:1100px; margin:20px auto; padding: 0 16px;
-      display:grid; grid-template-columns: 360px 1fr; gap:20px;
+     margin:20px auto; padding: 0 16px;
     }
     @media (max-width: 900px){
       .page{ grid-template-columns: 1fr; }
       .brand{ margin: 0; }
+
+          .filters{ 
+     display: flex;
+     gap: 0;
+     flex-wrap: wrap;
+    }
+
+
+
     }
 
     /* Card */
     .card{
-      background:var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+      background:var(--card); 
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       border:1px solid #eee;
     }
 
-    /* Create/Edit form */
+    /* Create/Edit form (card inside the modal) */
     .form{
       padding:16px;
     }
@@ -117,6 +134,7 @@
     /* Tasks grid */
     .tasks{
       padding:16px;
+     
     }
     .tasks-head{
       display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
@@ -169,16 +187,22 @@
     }
 .pill{
   border:1px solid #e5e7eb; background:#fff; color:#374151;
-  padding:8px 12px; border-radius:999px; font: inherit; cursor:pointer;
+      padding: 7px 7px; border-radius:999px; font: inherit; cursor:pointer;
   transition:.15s ease; outline:none;
 }
 .pill:hover{ background:#f8fafc; }
 .pill.active{ border-color:var(--brand); color:var(--brand); box-shadow:0 0 0 4px var(--ring); }
 
 .search{
-  position:relative; min-width:220px; flex:1; max-width:360px;
+  position:relative; min-width:220px; flex:1; max-width:410px;
 }
-.search i{ position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:18px; color:var(--muted); }
+.search i{ 
+  position:absolute;
+  left:10px; top:50%; 
+  transform:translateY(-50%);
+  font-size:18px; 
+   color:var(--muted); 
+  }
 .search input{
   width:100%; height:40px; border-radius:12px; padding:0 36px 0 36px;
   border:1.5px solid #e5e7eb; outline:none; background:#fff; font: inherit;
@@ -189,7 +213,9 @@
   position:absolute; right:6px; top:50%; transform:translateY(-50%);
   border:none; background:transparent; cursor:pointer; height:36px; width:36px; border-radius:8px;
 }
-.search .clear:hover{ background:#f3f4f6; }
+.search .clear:hover{ 
+  background:#f3f4f6;
+ }
 
 /* Overdue task highlight */
 .task.overdue{
@@ -207,6 +233,34 @@
   height:140px;
 }
 @keyframes sheen{ 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+
+/* small create button */
+.btn.small {
+  height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+/* Modal-like behavior for the existing form (keeps layout intact) */
+#taskFormSection {
+  position: fixed;      /* remove from flow */
+  inset: 0;             /* top/right/bottom/left: 0 */
+  display: none;        /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
+  z-index: 70;
+  padding: 24px;
+}
+#taskFormSection .card.form {
+  max-width: 520px;
+  width: 100%;
+  margin: 0;
+}
+#taskFormSection.show {
+  display: flex !important;
+}
   </style>
 </head>
 <body>
@@ -227,60 +281,69 @@
 
 
   <main class="page">
-    
-    <section class="card form">
-      <h2 id="formHeading">Create Task</h2>
+   <section id="taskFormSection">
+  <div class="card form"> <!-- inner wrapper keeps styling -->
+    <h2 id="formHeading">Create Task</h2>
 
-      <div class="field">
-        <label for="title">Title *</label>
-        <input id="title" class="input" placeholder="e.g. Send invoice to client" required />
-      </div>
+    <div class="field">
+      <label for="title">Title *</label>
+      <input id="title" class="input" placeholder="e.g. Send invoice to client" required />
+    </div>
 
-      <div class="field">
-        <label for="description">Description</label>
-        <textarea id="description" class="input" placeholder="Optional notes..."></textarea>
-      </div>
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" class="input" placeholder="Optional notes..."></textarea>
+    </div>
 
-      <div class="row">
-        <div class="field" style="flex:1">
-          <label for="priority">Priority</label>
-          <select id="priority">
-            <option value="low">Low</option>
-            <option value="medium" selected>Medium</option>
-            <option value="high">High</option>
-          </select>
-        </div>
-        <div class="field" style="flex:1">
-          <label for="deadline">Deadline</label>
-          <input id="deadline" type="date" class="date" />
-        </div>
+    <div class="row">
+      <div class="field" style="flex:1">
+        <label for="priority">Priority</label>
+        <select id="priority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
       </div>
+      <div class="field" style="flex:1">
+        <label for="deadline">Deadline</label>
+        <input id="deadline" type="date" class="date" />
+      </div>
+    </div>
 
-      <input type="hidden" id="editTaskId" />
-      <div class="actions">
-        <button id="cancelEdit" class="btn secondary" style="display:none">Cancel</button>
-        <button id="submitBtn" class="btn"><i class='bx bx-plus-circle'></i><span>Save Task</span></button>
-      </div>
-      <div style="margin-top:10px">
-        <span class="badge"><i class='bx bx-info-circle'></i> Tip: click a task’s ✏️ to edit</span>
-      </div>
-    </section>
+    <input type="hidden" id="editTaskId" />
+    <div class="actions">
+      <button id="cancelEdit" class="btn secondary" style="display:none">Cancel</button>
+      <button id="submitBtn" class="btn">
+        <i class='bx bx-plus-circle'></i><span>Save Task</span>
+      </button>
+    </div>
+    <div style="margin-top:10px">
+      <span class="badge"><i class='bx bx-info-circle'></i> Tip: click a task’s ✏️ to edit</span>
+    </div>
+  </div>
+</section>
 
     <!-- Tasks -->
     <section class="card tasks">
       <div class="tasks-head">
-        <h2 style="margin:0; color:var(--brand)">Your Tasks</h2>
+        <h2 style="margin:0; color:var(--brand)"> </h2>
         <span id="counter" class="chip">0 tasks</span>
       </div>
 
-      <!-- NEW: toolbar -->
+      <!-- NEW: toolbar (Create button inserted in filters section) -->
   <div class="toolbar">
     <div class="filters" role="tablist" aria-label="Task filters">
       <button class="pill active" data-filter="all"    onclick="setFilter('all')"    aria-selected="true">All</button>
       <button class="pill"         data-filter="pending" onclick="setFilter('pending')">Pending</button>
       <button class="pill"         data-filter="done"    onclick="setFilter('done')">Done</button>
       <button class="pill"         data-filter="overdue" onclick="setFilter('overdue')">Overdue</button>
+
+      <!-- create button inside filters -->
+      <button id="createTaskBtn" class="btn small" style="margin-left:8px">
+        <i class='bx bx-plus-circle'></i> <span>Create Task</span>
+      </button>
     </div>
+
     <div class="search">
       <i class='bx bx-search'></i>
       <input id="searchBox" type="search" placeholder="Search tasks…" oninput="setQuery(this.value)">
@@ -305,7 +368,7 @@
       window.location.href = "index.html";
     }
 
-    // Elements
+    // Elements (kept as in your original structure)
     const userList   = document.getElementById("userList");
     const counter    = document.getElementById("counter");
     const formHeading= document.getElementById("formHeading");
@@ -317,6 +380,10 @@
     const submitBtn  = document.getElementById("submitBtn");
     const cancelBtn  = document.getElementById("cancelEdit");
     const toastEl    = document.getElementById("toast");
+
+    // references for create button + the modal-like form
+    const createBtn    = document.getElementById("createTaskBtn");
+    const formSection  = document.getElementById("taskFormSection");
 
     function toast(msg){
       toastEl.textContent = msg;
@@ -346,50 +413,75 @@
       }
     }
 
-    function renderTasks(tasks, opts={ total: tasks.length }){
-  const total = opts.total ?? tasks.length;
-
-  if(!tasks.length){
-    userList.innerHTML = `<div class="empty">No tasks match your filters — try clearing search or switching filter.</div>`;
-    counter.textContent = `${tasks.length} of ${total} ${total===1?'task':'tasks'}`;
-    return;
-  }
-  counter.textContent = `${tasks.length} of ${total} ${total===1?'task':'tasks'}`;
-
-  userList.innerHTML = "";
-  tasks.forEach(task=>{
-    const div = document.createElement("div");
-    div.className = "task";
-    if (isOverdue(task)) div.classList.add('overdue'); // NEW: highlight overdue
-
-    const deadline = task.deadline ? String(task.deadline).split("T")[0] : "None";
-    const status = task.status || (task.completed ? "Done" : "pending");
-
-    div.innerHTML = `
-      <h3>${escapeHtml(task.title)}</h3>
-      ${task.description ? `<div class="muted">${escapeHtml(task.description)}</div>` : ""}
-      <div class="meta">
-        <span class="chip"><i class='bx bxs-flag'></i> Priority: ${escapeHtml(task.priority || "medium")}</span>
-        <span class="chip ${status.toLowerCase()==='done'?'ok':'warn'}"><i class='bx bx-check-shield'></i> ${escapeHtml(status)}</span>
-        <span class="chip"><i class='bx bx-calendar'></i> Deadline: ${escapeHtml(deadline)}</span>
-      </div>
-      <div class="row-actions">
-        <button class="btn secondary" onclick='startEdit(${task.id}, ${encodeTask(task)})'><i class="bx bx-edit-alt"></i> Edit</button>
-        <button class="btn" style="background:#0ea5e9;border-color:#0ea5e9" onclick="markDone(${task.id})"><i class='bx bx-check'></i> Done</button>
-        <button class="btn" style="background:#ef4444;border-color:#ef4444" onclick="deleteTask(${task.id})"><i class='bx bx-trash'></i> Delete</button>
-      </div>
-    `;
-    userList.appendChild(div);
-  });
-}
-
-
-    // Helpers
+    // helpers used by rendering & filtering
     function escapeHtml(str){
       return String(str ?? "").replace(/[&<>"']/g, s=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[s]));
     }
     function encodeTask(task){
       return JSON.stringify(task).replace(/</g,"\\u003c").replace(/>/g,"\\u003e").replace(/"/g,'&quot;');
+    }
+
+    function normalize(s){
+      return String(s||'').toLowerCase();
+    }
+    function matchesQuery(task, q){
+      if (!q) return true;
+      const t = normalize(task.title);
+      const d = normalize(task.description);
+      return t.includes(q) || d.includes(q);
+    }
+
+    // overdue detection
+    function isDone(task){
+      const status = (task.status || (task.completed ? 'Done' : 'pending')).toLowerCase();
+      return status === 'done';
+    }
+
+    function isOverdue(task){
+      if (!task.deadline) return false;
+      const dateStr = String(task.deadline).split('T')[0];
+      if (!dateStr || dateStr === 'None') return false;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const d = new Date(dateStr); d.setHours(0,0,0,0);
+      return d < today && !isDone(task);
+    }
+
+    // render tasks (keeps your original markup)
+    function renderTasks(tasks, opts={ total: tasks.length }){
+      const total = opts.total ?? tasks.length;
+
+      if(!tasks.length){
+        userList.innerHTML = `<div class="empty">No tasks match your filters — try clearing search or switching filter.</div>`;
+        counter.textContent = `${tasks.length} of ${total} ${total===1?'task':'tasks'}`;
+        return;
+      }
+      counter.textContent = `${tasks.length} of ${total} ${total===1?'task':'tasks'}`;
+
+      userList.innerHTML = "";
+      tasks.forEach(task=>{
+        const div = document.createElement("div");
+        div.className = "task";
+        if (isOverdue(task)) div.classList.add('overdue');
+
+        const deadline = task.deadline ? String(task.deadline).split("T")[0] : "None";
+        const status = task.status || (task.completed ? "Done" : "pending");
+
+        div.innerHTML = `
+          <h3>${escapeHtml(task.title)}</h3>
+          ${task.description ? `<div class="muted">${escapeHtml(task.description)}</div>` : ""}
+          <div class="meta">
+            <span class="chip"><i class='bx bxs-flag'></i> Priority: ${escapeHtml(task.priority || "medium")}</span>
+            <span class="chip ${status.toLowerCase()==='done'?'ok':'warn'}"><i class='bx bx-check-shield'></i> ${escapeHtml(status)}</span>
+            <span class="chip"><i class='bx bx-calendar'></i> Deadline: ${escapeHtml(deadline)}</span>
+          </div>
+          <div class="row-actions">
+            <button class="btn secondary" onclick='startEdit(${task.id}, ${encodeTask(task)})'><i class="bx bx-edit-alt"></i> Edit</button>
+            <button class="btn" style="background:#0ea5e9;border-color:#0ea5e9" onclick="markDone(${task.id})"><i class='bx bx-check'></i> Done</button>
+            <button class="btn" style="background:#ef4444;border-color:#ef4444" onclick="deleteTask(${task.id})"><i class='bx bx-trash'></i> Delete</button>
+          </div>
+        `;
+        userList.appendChild(div);
+      });
     }
 
     // Actions
@@ -422,7 +514,7 @@
       }
     }
 
-    // Create / Update
+    // Create / Update (keep your original logic; hide modal on success)
     submitBtn.addEventListener("click", async (e)=>{
       e.preventDefault();
       const title = titleEl.value.trim();
@@ -461,6 +553,9 @@
         }else{
           toast(editing ? "Task updated" : "Task created");
           resetForm();
+          // hide modal and show create button again
+          formSection.classList.remove("show");
+          createBtn.classList.remove("hidden");
           await loadTasks();
         }
       }catch(err){
@@ -484,11 +579,12 @@
     cancelBtn.addEventListener("click", (e)=>{
       e.preventDefault();
       resetForm();
+      formSection.classList.remove("show");
+      createBtn.classList.remove("hidden");
     });
 
     // Expose for inline onclick
     window.startEdit = function(id, task){
-      // task is passed as an object literal via encoded JSON string -> parse if necessary
       if (typeof task === "string"){
         try{ task = JSON.parse(task.replace(/&quot;/g,'"')); }catch{}
       }
@@ -500,6 +596,9 @@
 
       formHeading.textContent = "Edit Task";
       cancelBtn.style.display = "inline-flex";
+      // show modal for editing
+      formSection.classList.add("show");
+      createBtn.classList.add("hidden");
       titleEl.scrollIntoView({behavior:"smooth", block:"center"});
     };
 
@@ -508,92 +607,85 @@
     let currentFilter = 'all';     // 'all' | 'pending' | 'done' | 'overdue'
     let currentQuery  = ''; 
 
+    // apply & render pipeline
+    function applyAndRender(){
+      let list = allTasks.slice();
 
-    //overdue detection
-    function isDone(task){
-  const status = (task.status || (task.completed ? 'Done' : 'pending')).toLowerCase();
-  return status === 'done';
-}
+      // filter
+      if (currentFilter === 'pending') list = list.filter(t => !isDone(t));
+      if (currentFilter === 'done')    list = list.filter(t => isDone(t));
+      if (currentFilter === 'overdue') list = list.filter(t => isOverdue(t));
 
-function isOverdue(task){
-  if (!task.deadline) return false;
-  const dateStr = String(task.deadline).split('T')[0];
-  if (!dateStr || dateStr === 'None') return false;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const d = new Date(dateStr); d.setHours(0,0,0,0);
-  return d < today && !isDone(task);
-}
+      // search
+      const q = normalize(currentQuery.trim());
+      if (q) list = list.filter(t => matchesQuery(t, q));
 
-function normalize(s){
-  return String(s||'').toLocaleLowerCase();
-}
+      renderTasks(list, { total: allTasks.length });
+    }
 
-///render
-function applyAndRender(){
-  let list = allTasks.slice();
+    function setFilter(name){
+      currentFilter = name;
+      document.querySelectorAll('.pill').forEach(p=>{
+        const active = p.getAttribute('data-filter') === name;
+        p.classList.toggle('active', active);
+        p.setAttribute('aria-selected', String(active));
+      });
+      applyAndRender();
+    }
 
-  // filter
-  if (currentFilter === 'pending') list = list.filter(t => !isDone(t));
-  if (currentFilter === 'done')    list = list.filter(t => isDone(t));
-  if (currentFilter === 'overdue') list = list.filter(t => isOverdue(t));
+    function setQuery(val){
+      currentQuery = val;
+      applyAndRender();
+    }
 
-  // search
-  const q = normalize(currentQuery.trim());
-  if (q) list = list.filter(t => matchesQuery(t, q));
+    function clearQuery(){
+      currentQuery = '';
+      const box = document.getElementById('searchBox');
+      if (box){ box.value = ''; box.focus(); }
+      applyAndRender();
+    }
 
-  renderTasks(list, { total: allTasks.length });
-}
+    async function loadTasks(){
+      userList.innerHTML = '';
+      for (let i=0;i<6;i++){
+        const s = document.createElement('div');
+        s.className = 'skeleton';
+        userList.appendChild(s);
+      }
 
+      try{
+        const res = await fetch(`${API_BASE}/get_task`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if(!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        allTasks = data.tasks || [];
+        applyAndRender();
+      }catch(e){
+        console.error(e);
+        userList.innerHTML = `<div class="empty" style="color:#b91c1c">Failed to load tasks. Please log in again.</div>`;
+        counter.textContent = '0 tasks';
+      }
+    }
 
- function setFilter(name){
-  currentFilter = name;
-  // Update active pill styles + ARIA
-  document.querySelectorAll('.pill').forEach(p=>{
-    const active = p.getAttribute('data-filter') === name;
-    p.classList.toggle('active', active);
-    p.setAttribute('aria-selected', String(active));
-  });
-  applyAndRender();
-}
-
-function setQuery(val){
-  currentQuery = val;
-  applyAndRender();
-}
-
-function clearQuery(){
-  currentQuery = '';
-  const box = document.getElementById('searchBox');
-  if (box){ box.value = ''; box.focus(); }
-  applyAndRender();
-}
-
-
-
-async function loadTasks(){
-  // skeletons while loading
-  userList.innerHTML = '';
-  for (let i=0;i<6;i++){
-    const s = document.createElement('div');
-    s.className = 'skeleton';
-    userList.appendChild(s);
-  }
-
-  try{
-    const res = await fetch(`${API_BASE}/get_task`, {
-      headers: { "Authorization": "Bearer " + token }
+    // show modal when create button clicked
+    createBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      formSection?.classList.add("show");
+      createBtn?.classList.add("hidden");
+      cancelBtn.style.display = "inline-flex";
+      formHeading.textContent = "Create Task";
+      titleEl.scrollIntoView({ behavior: "smooth", block: "center" });
     });
-    if(!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
-    allTasks = data.tasks || [];
-    applyAndRender();
-  }catch(e){
-    console.error(e);
-    userList.innerHTML = `<div class="empty" style="color:#b91c1c">Failed to load tasks. Please log in again.</div>`;
-    counter.textContent = '0 tasks';
-  }
-}
 
+    // close modal by clicking overlay outside card
+    formSection?.addEventListener("click", (e) => {
+      if (e.target === formSection){
+        resetForm();
+        formSection.classList.remove("show");
+        createBtn.classList.remove("hidden");
+      }
+    });
 
     // Go!
     loadTasks();
