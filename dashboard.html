@@ -226,8 +226,8 @@
   border-color:#73fe6c;
   box-shadow:0 6px 20px rgba(239,68,68,.10);
 }
-.task.done .chip:last-child{ /* done chip */
-  background:#73fe6c; border-color:#73fe6c; color:#b91c1c;
+.task.done .chip:last-child{ /* deadline chip */
+  background:#73fe6c; border-color:#fee2e2; color:#b91c1c;
 }
 .task.overdue .chip:last-child{ /* deadline chip */
   background:#fef2f2; border-color:#fee2e2; color:#b91c1c;
@@ -469,7 +469,7 @@
         const div = document.createElement("div");
         div.className = "task";
         if (isOverdue(task)) div.classList.add('overdue');
-        if (iDone(task)) div.classList.add('done');
+        if (markDone(task)) div.classList.add('done');
 
         const deadline = task.deadline ? String(task.deadline).split("T")[0] : "None";
         const status = task.status || (task.completed ? "Done" : "pending");
@@ -654,8 +654,28 @@
       applyAndRender();
     }
 
-    
-  
+    async function loadTasks(){
+      userList.innerHTML = '';
+      for (let i=0;i<6;i++){
+        const s = document.createElement('div');
+        s.className = 'skeleton';
+        userList.appendChild(s);
+      }
+
+      try{
+        const res = await fetch(`${API_BASE}/get_task`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if(!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        allTasks = data.tasks || [];
+        applyAndRender();
+      }catch(e){
+        console.error(e);
+        userList.innerHTML = `<div class="empty" style="color:#b91c1c">Failed to load tasks. Please log in again.</div>`;
+        counter.textContent = '0 tasks';
+      }
+    }
 
     // show modal when create button clicked
     createBtn?.addEventListener("click", (e) => {
