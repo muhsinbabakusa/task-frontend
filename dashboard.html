@@ -194,7 +194,7 @@
 .pill.active{ border-color:var(--brand); color:var(--brand); box-shadow:0 0 0 4px var(--ring); }
 
 .search{
-  position:relative; min-width:220px; flex:1; max-width:410px;
+  position:relative; min-width:220px; flex:1; max-width:400px;
 }
 .search i{ 
   position:absolute;
@@ -221,13 +221,6 @@
 .task.overdue{
   border-color:#fecaca;
   box-shadow:0 6px 20px rgba(239,68,68,.10);
-}
-.task.done{
-  border-color:#73fe6c;
-  box-shadow:0 6px 20px rgba(239,68,68,.10);
-}
-.task.done .chip:last-child{ /* deadline chip */
-  background:#73fe6c; border-color:#fee2e2; color:#b91c1c;
 }
 .task.overdue .chip:last-child{ /* deadline chip */
   background:#fef2f2; border-color:#fee2e2; color:#b91c1c;
@@ -469,7 +462,6 @@
         const div = document.createElement("div");
         div.className = "task";
         if (isOverdue(task)) div.classList.add('overdue');
-        if (markDone(task)) div.classList.add('done');
 
         const deadline = task.deadline ? String(task.deadline).split("T")[0] : "None";
         const status = task.status || (task.completed ? "Done" : "pending");
@@ -618,7 +610,6 @@
     // apply & render pipeline
     function applyAndRender(){
       let list = allTasks.slice();
-      overdue
 
       // filter
       if (currentFilter === 'pending') list = list.filter(t => !isDone(t));
