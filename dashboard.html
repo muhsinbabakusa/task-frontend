@@ -8,7 +8,7 @@
 
   <style>
     :root{
-      --brand:#337F5E;
+      --brand:#32fa8d;
       --bg:#f6f7f8;
       --card:#ffffff;
       --text:#222;
@@ -261,6 +261,76 @@
 #taskFormSection.show {
   display: flex !important;
 }
+
+/* Modal animation */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  padding: 16px;
+}
+.modal.show { display: flex; animation: fadeIn .3s ease; }
+@keyframes fadeIn {
+  from { opacity:0; transform:scale(.9); }
+  to { opacity:1; transform:scale(1); }
+}
+
+/* Profile card */
+.profile-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+/* Avatar */
+.avatar-wrapper {
+  position: relative;
+  width: 100px; height: 100px;
+  margin: 0 auto 20px;
+}
+.avatar-wrapper img {
+  width: 100%; height: 100%;
+  border-radius: 50%; object-fit: cover;
+  border: 3px solid var(--brand);
+}
+.change-avatar {
+  position: absolute;
+  bottom: 0; right: 0;
+  background: var(--brand);
+  color: #fff;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 2px 5px rgba(0,0,0,.2);
+}
+.change-avatar:hover { background:#285d47; }
+
+/* Fields */
+.profile-card .field {
+  margin-bottom: 14px;
+}
+.avatar-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--brand);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.avatar-btn:hover {
+  transform: scale(1.1);
+}
   </style>
 </head>
 <body>
@@ -270,12 +340,17 @@
     <div class="header-inner">
       <div class="brand">
        
-        <img src="LogoDesign_BolTwithCheckmark.png" alt="Logo">
+        <img src="tick.png" alt="Logo">
         <h1>Tick</h1>
       </div>
       <div class="header-actions">
         <button id="logoutBtn" class="btn secondary"><i class='bx bx-log-out'></i> Logout</button>
+        <img id="profileBtn" 
+     src="https://ui-avatars.com/api/?name=User" 
+     alt="Profile" 
+     class="avatar-btn">
       </div>
+      
     </div>
   </header>
 
@@ -355,6 +430,62 @@
         <div class="empty">Loading tasks…</div>
       </div>
     </section>
+
+
+    <!-- Profile Modal -->
+<section id="profileSection" class="modal">
+  <div class="card profile-card">
+    <h2 style="margin-bottom:16px; text-align:center;">My Profile</h2>
+
+    <!-- Avatar + Change -->
+    <div class="avatar-wrapper">
+      <img id="profileAvatar" 
+           src="https://ui-avatars.com/api/?name=User" 
+           alt="Profile Picture" />
+      <label for="profileInput" class="change-avatar">
+        <i class='bx bx-camera'></i>
+      </label>
+      <input type="file" id="profileInput" accept="image/*" hidden />
+    </div>
+
+    <!-- Fields -->
+    <div class="field">
+      <label for="profileName">Full Name</label>
+      <input id="profileName" class="input" type="text" placeholder="Your full name" />
+    </div>
+
+    <div class="field">
+      <label for="profileEmail">Email</label>
+      <input id="profileEmail" class="input" type="email" readonly />
+    </div>
+
+    <div class="field">
+      <label for="profileBio">Bio</label>
+      <textarea id="profileBio" class="input" placeholder="Tell us something..."></textarea>
+    </div>
+
+    <!-- Change Password -->
+
+<button id="togglePasswordFields" class="btn secondary" type="button">
+  <i class='bx bx-lock-alt'></i>Reset Password
+</button>
+
+<div id="passwordFields" style="display:none; margin-top:12px;">
+  <div class="row">
+    <input id="oldPassword" class="input" type="password" placeholder="Current password" />
+  </div><br>
+  <div class="row">
+    <input id="newPassword" class="input" type="password" placeholder="New password" />
+  </div>
+</div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button id="cancelProfile" class="btn secondary">Cancel</button>
+      <button id="saveProfile" class="btn"><i class='bx bx-save'></i> Save</button>
+    </div>
+  </div>
+</section>
   </main>
 
   <!-- Toast -->
@@ -364,9 +495,9 @@
     const API_BASE = "https://task-manager-8d1z.onrender.com";
     const token = localStorage.getItem("access_token");
 
-    if (!token) {
-      window.location.href = "index.html";
-    }
+    //  if (!token) {
+    //   window.location.href = "index.html";
+    // }
 
     // Elements (kept as in your original structure)
     const userList   = document.getElementById("userList");
@@ -391,10 +522,10 @@
       setTimeout(()=>toastEl.classList.remove("show"), 1800);
     }
 
-    // Logout
+      //this is the logout funtion aha
     document.getElementById("logoutBtn").addEventListener("click", ()=>{
       localStorage.removeItem("access_token");
-      window.location.href = "index.html";
+      window.location.href = "login.html";
     });
 
     // Load tasks
@@ -476,8 +607,8 @@
           </div>
           <div class="row-actions">
             <button class="btn secondary" onclick='startEdit(${task.id}, ${encodeTask(task)})'><i class="bx bx-edit-alt"></i> Edit</button>
-            <button class="btn" style="background:#0ea5e9;border-color:#0ea5e9" onclick="markDone(${task.id})"><i class='bx bx-check'></i> Done</button>
-            <button class="btn" style="background:#ef4444;border-color:#ef4444" onclick="deleteTask(${task.id})"><i class='bx bx-trash'></i> Delete</button>
+            <button class="btn don" style="background:#0ea5e9;border-color:#0ea5e9" onclick="markDone(${task.id})"><i class='bx bx-check'></i> Done</button>
+            <button class="btn del" style="background:#ef4444;border-color:#ef4444" onclick="deleteTask(${task.id})"><i class='bx bx-trash'></i> Delete</button>
           </div>
         `;
         userList.appendChild(div);
@@ -686,8 +817,161 @@
         createBtn.classList.remove("hidden");
       }
     });
+   // Profile
+const profileBtn = document.getElementById("profileBtn");
+const profileSection = document.getElementById("profileSection");
+const profileAvatar = document.getElementById("profileAvatar");
+const profileInput = document.getElementById("profileInput");
+const profileName = document.getElementById("profileName");
+const profileEmail = document.getElementById("profileEmail");
+const profileBio = document.getElementById("profileBio");
+const oldPassword = document.getElementById("oldPassword");
+const newPassword = document.getElementById("newPassword");
+const saveProfileBtn = document.getElementById("saveProfile");
+const cancelProfileBtn = document.getElementById("cancelProfile");
 
-    // Go!
+// Open modal on button click
+profileBtn.addEventListener("click", async () => {
+  try {
+    const res = await fetch(`${API_BASE}/profile`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    const user = await res.json();
+
+    profileName.value = user.full_name || "";
+    profileEmail.value = user.email || "";
+    profileBio.value = user.bio || "";
+
+    if (user.profile_picture) {
+      profileAvatar.src = API_BASE + user.profile_picture;
+      profileBtn.src = API_BASE + user.profile_picture;
+    } else {
+      const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || "User")}`;
+      profileAvatar.src = fallback;
+      profileBtn.src = fallback;
+    }
+  } catch (err) {
+    console.error("Failed to load profile:", err);
+  }
+  profileSection.classList.add("show");
+});
+
+// Cancel closes modal
+cancelProfileBtn.addEventListener("click", () => {
+  profileSection.classList.remove("show");
+});
+
+// Preview avatar instantly on file select
+profileInput.addEventListener("change", () => {
+  if (profileInput.files && profileInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      profileAvatar.src = e.target.result; // show preview
+    };
+    reader.readAsDataURL(profileInput.files[0]);
+  }
+});
+
+// Save profile
+saveProfileBtn.addEventListener("click", async () => {
+  const formData = new FormData();
+  formData.append("full_name", profileName.value.trim());
+  formData.append("bio", profileBio.value.trim());
+  if (profileInput.files[0]) {
+    formData.append("file", profileInput.files[0]);
+  }
+  if (oldPassword.value && newPassword.value) {
+    formData.append("old_password", oldPassword.value);
+    formData.append("new_password", newPassword.value);
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/profile/update`, {
+      method: "PUT",
+      headers: { "Authorization": "Bearer " + token },
+      body: formData
+    });
+    if (!res.ok) throw new Error("Failed to update");
+    const data = await res.json();
+
+    toast("Profile updated!");
+
+    if (data.profile_picture) {
+      profileAvatar.src = API_BASE + data.profile_picture;
+      profileBtn.src = API_BASE + data.profile_picture;
+    }
+
+     if (oldPassword.value && newPassword.value) {
+      const pwdData = new FormData();
+      pwdData.append("old_pwd", oldPassword.value);
+      pwdData.append("new_pwd", newPassword.value);
+
+      const pwdRes = await fetch(`${API_BASE}/profile/change_password`, {
+        method: "PUT",
+        headers: { "Authorization": "Bearer " + token },
+        body: pwdData
+      });
+
+      const pwdResult = await pwdRes.json();
+      if (!pwdRes.ok) {
+        throw new Error(pwdResult.detail || "Password change failed");
+      }
+
+      toast("Password changed!");
+      oldPassword.value = "";
+      newPassword.value = "";
+    }
+
+    profileSection.classList.remove("show");
+  } catch (err) {
+    console.error(err);
+    toast("Update failed");
+  }
+});  
+// Load profile once when page loads (so avatar stays after refresh)
+async function loadProfileOnStart() {
+  try {
+    const res = await fetch(`${API_BASE}/profile`, {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    if (!res.ok) return;
+    const user = await res.json();
+
+    // Update header avatar
+    if (user.profile_picture) {
+      profileBtn.src = API_BASE + user.profile_picture;
+    } else {
+      profileBtn.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || "User")}`;
+    }
+
+    // Update modal avatar too
+    profileAvatar.src = user.profile_picture
+      ? API_BASE + user.profile_picture
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.full_name || "User")}`;
+  } catch (err) {
+    console.error("Failed to auto-load profile:", err);
+  }
+}
+
+
+const togglePasswordBtn = document.getElementById("togglePasswordFields");
+const passwordFields = document.getElementById("passwordFields");
+
+togglePasswordBtn.addEventListener("click", () => {
+  if (passwordFields.style.display === "none") {
+    passwordFields.style.display = "block";
+    togglePasswordBtn.textContent = "Cancel";
+  } else {
+    passwordFields.style.display = "none";
+    oldPassword.value = "";
+    newPassword.value = "";
+    togglePasswordBtn.textContent = "Reset Password";
+  }
+});
+
+// Run it immediately after page loads
+loadProfileOnStart();
+// Go!
     loadTasks();
   </script>
 </body>
